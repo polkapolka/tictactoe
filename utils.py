@@ -1,12 +1,13 @@
 #!/usr/bin/python
 """
+Contains Classes called by tictactoe.py.  
 """
 import sys
 
 class GameBoard(object): # all classes should be new-style
     """Handles the current and future states of a tic-tac-toe board.
 
-    Encompasses GameState, some of get_user_move, generate_game_tree 
+    Has-A GameState, some of get_user_move, calls generate_game_tree 
     and __print_board.
 
     """
@@ -37,52 +38,44 @@ class GameBoard(object): # all classes should be new-style
             move_string += '\n'
         return (move_string % tuple(positions))
 
-    def get_user_move(self):
-        while True:
-            # Asks for move from player
-            try:
-                move = ord(input("Enter Move: ")) - 65
-            # Turns Keyboard Interrupt into Game Exit
-            except:
-                sys.exit(0)
-            # Check that move is on the game board
-            if move < 0 or move > (self.size*self.size):
-                print("Input is not a valid move. Please enter a move from the Legend.")
-            # Check that the move has not already been played
-            elif self.moves[move] != ' ':
-                print("Move is already taken. Pick another move")
-            else:
-                break
+    def check_valid_move(self, move):
+        # Check that move is on the game board
+        if move < 0 or move > (self.size*self.size):
+            print("Input is not a valid move. Please enter a move from the Legend.")
+            move = None
+        # Check that the move has not already been played
+        elif self.moves[move] != ' ':
+            print("Move is already taken. Pick another move")
+            move = None
         return move
 
     def turn(self, move):
         self.moves[move] = self.player_turn
-        if self.check_win():
+        if self.check_win(self):
             self.winners =[self.player_turn]
         elif self.check_tie():
             self.winners = [' ']
             self.done = -1
 
-    def generate_game_tree(self, computer_player):
-        pass
-
-    def check_win(self):
+    @staticmethod
+    def check_win(game_board):
         is_win =False
-        locations = range(self.size * self.size)
-        horizontals = [self.moves[i*self.size:(i+1)*self.size] for i in range(self.size)]
-        verticals = [[self.moves[i+k*self.size] for k in range(self.size)] for i in range(self.size)]
-        diagonals = [[self.moves[i*self.size+i] for i in range(self.size)],[self.moves[(i+1)*self.size -(i+1)] for i in range(self.size)]]
+        locations = range(game_board.size * game_board.size)
+        horizontals = [game_board.moves[i*game_board.size:(i+1)*game_board.size] for i in range(game_board.size)]
+        verticals = [[game_board.moves[i+k*game_board.size] for k in range(game_board.size)] for i in range(game_board.size)]
+        diagonals = [[game_board.moves[i*game_board.size+i] for i in range(game_board.size)],[game_board.moves[(i+1)*game_board.size -(i+1)] for i in range(game_board.size)]]
         for line in horizontals+verticals+diagonals:
-            is_win = self.check_win_line(line)
+            is_win = game_board.check_win_line(line)
             if is_win:
-                self.done = 1
+                game_board.done = 1
                 break
         return is_win
 
-    def check_win_line(self, line):
+    @staticmethod
+    def check_win_line(line):
         if any([l==' 'for l in line]):
             return False
-        elif all([line[0]==line[i] for i in range(self.size)]):
+        elif all([line[0]==line[i] for i in range(len(line))]):
             return True
         else:
             return False
@@ -100,6 +93,49 @@ class GameBoard(object): # all classes should be new-style
             print("The winner is player %s!" % tuple(self.winners))
         elif self.done == -1:
             print("It's a tie!")
+
+class GameState:
+    """Creates a GameState Tree.
+
+    Facilitates Minimax Algorithm for computer player.
+    """
+    def __init__(self, game_board):
+        self.game_board = game_board
+        self.children = []
+        self.game_end = False
+
+    def generate_children(self, player):
+        open_moves = [i for i, x in enumerate(self.game_board) if x == ' ']
+
+        for move in moves:
+            child = GameState(self.game_board)
+            child.game_board[move] = player
+            child.set_winner()
+
+        if child.game_end == False:
+            child.generate_children('X' if player == 'O' else 'O')
+            self.children.append(child)
+        else:
+            self.children.append(child)
+
+    def set_winner(self):
+        #X is given a positive score, O is given a negative score
+        winner = self.game_board.check_win(game_board)
+        if winner == 'X':
+            self.score = 1
+            self.game_end = True
+        elif winner == 'O':
+            self.score = -1
+            self.game_end = True
+        elif winner == -1:
+            self.score = 0
+            self.game_end = True
+        else:
+            self.score = 0
+            self.game_end = False
+
+    def check_win(self):
+        pass
 
 
 
@@ -123,7 +159,16 @@ class HumanPlayer(Player):
 
     """
     def make_move(self, game_board):
-        return game_board.get_user_move()
+        while True:
+            # Asks for move from player
+            try:
+                move = ord(input("Enter Move: ")) - 65
+            # Turns Keyboard Interrupt into Game Exit
+            except:
+                sys.exit(0)
+            if game_board.check_valid_move(move) is not None:
+                break
+        return move
         
 
 
@@ -133,6 +178,8 @@ class ComputerPlayer(Player):
     Encompasses generate_best_move and minimax.
 
     """
+    def make_move(self, game_board):
+        pass
     def generate_best_move(self):
         pass
     def minimax(self):
