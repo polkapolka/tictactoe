@@ -7,8 +7,7 @@ import sys
 class GameBoard(object): # all classes should be new-style
     """Handles the current and future states of a tic-tac-toe board.
 
-    Has-A GameState, some of get_user_move, calls generate_game_tree 
-    and __print_board.
+    Has-A GameState.
 
     """
     def __init__(self, size):
@@ -134,9 +133,6 @@ class GameState:
             self.score = 0
             self.game_end = False
 
-    def check_win(self):
-        pass
-
 
 
 class Player(object):
@@ -155,8 +151,7 @@ class Player(object):
 class HumanPlayer(Player):
     """Handles all the user input stuff.
 
-    Encompasses the rest of get_user_move.
-
+    Is-A aka Inherits from Player objects.
     """
     def make_move(self, game_board):
         while True:
@@ -174,7 +169,8 @@ class HumanPlayer(Player):
 
 class ComputerPlayer(Player):
     """Handles AI stuff.
-
+    
+    Is-A aka Inherits from Player objects.
     Encompasses generate_best_move and minimax.
 
     """

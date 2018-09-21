@@ -48,13 +48,25 @@ def set_order_of_play(symbols, no_turns=0):
 def play_game(game_board, players, order_of_play):
     """Contains the main game loop."""
     while True:
+        # Get's Next Player
         game_board.player_turn = next(order_of_play)
+
+        # Show's the current state of the game
         print(game_board)
+
+        # The player generates a move for the board
         move = players[game_board.player_turn].make_move(game_board)
+
+        # The move is placed onto the board
         game_board.turn(move)
+
+        # If the game is done, then exits game loop
         if game_board.done != 0:
             break
+    # Print's final game state
     print(game_board)
+
+    # Congratulates Winner
     game_board.print_winner()
 
 def main():
@@ -62,6 +74,9 @@ def main():
 
     Create two Players  with symbols 'X' and 'O' and a GameBoard, 
     pick_player for first and play_game.
+
+    This tic-tac-toe game can expand from a 3 to 8 square board.
+    It can have as many players (shown as symbols) as the size of the board minus 1.
 
     """
     SYMBOLS = ['X','O']
